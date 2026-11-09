@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shiksha Kshetra — Auto Govt Exam Studio</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', 'Noto Sans Bengali', sans-serif; }
+    .bn-text { font-family: 'Noto Sans Bengali', 'Inter', sans-serif; }
+    .option-box { transition: all 0.15s ease-in-out; }
+    .option-box:active { transform: scale(0.99); }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .hl-word { background-color: #fef08a; color: #854d0e; padding: 0 4px; border-radius: 4px; font-weight: 600; }
+    .ul-word { text-decoration: underline; text-decoration-color: #ef4444; text-decoration-thickness: 2px; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+  <div class="w-full max-w-md bg-slate-50 text-slate-900 min-h-screen sm:min-h-[850px] sm:max-h-[94vh] flex flex-col sm:rounded-[38px] sm:border-[8px] sm:border-slate-800 shadow-2xl overflow-hidden relative">
+    
+    <!-- Top Status Bar -->
+    <div class="bg-slate-900 text-white px-5 py-2 flex items-center justify-between text-xs font-semibold select-none">
+      <span id="currentTime">9:41</span>
+      <div class="flex items-center gap-2">
+        <span id="mockTimerBadge" class="hidden bg-rose-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">⏱ 60:00</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between shadow-xs">
+      <div class="flex items-center gap-2 min-w-0">
+        <button type="button" onclick="toggleSidebar()" aria-label="Menu" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-base font-bold shrink-0 cursor-pointer">☰</button>
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1 truncate cursor-pointer" onclick="goHome()">
+            <span>🎯</span> <span id="appTitleHeader">Shiksha Kshetra</span>
+          </h1>
+          <p class="text-[10px] text-slate-500 bn-text truncate">
+            <span id="dailyDateBadge" class="text-indigo-600 font-semibold">ALL GOVT EXAM STUDIO</span>
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <div id="headerQuizActions" class="hidden items-center gap-1.5">
+          <select id="examCategorySelect" onchange="changeExamCategory(this.value)" class="bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-semibold px-2 py-1.5 rounded-xl outline-none cursor-pointer">
+            <option value="ssc">SSC</option>
+            <option value="rrb">RRB</option>
+            <option value="wbp">WBP</option>
+            <option value="tet">TET</option>
+          </select>
+          <button type="button" onclick="downloadCurrentPDF()" title="Download PDF" class="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-2 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1 cursor-pointer">
+            <span>📥</span><span>PDF</span>
+          </button>
+          <button type="button" onclick="toggleScoreboard()" class="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-2 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1 cursor-pointer">
+            <span>📊</span><span id="totalMarks">0.00</span>
+          </button>
+        </div>
+        <button type="button" onclick="toggleNotificationModal()" title="Notifications" class="relative w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center text-sm cursor-pointer">
+          <span>🔔</span>
+          <span id="notifBadge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">3</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Home Page View (Dedicated Home Dashboard) -->
+    <div id="homePageBody" class="flex-1 overflow-y-auto flex flex-col gap-4 p-4">
+      <!-- Welcome Hero Banner -->
+      <div class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl p-4 shadow-md flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs uppercase tracking-wider font-bold bg-white/20 px-2.5 py-0.5 rounded-full">ALL GOVT EXAM STUDIO</span>
+          <span class="text-xs">🎯 Shiksha Kshetra</span>
+        </div>
+        <h2 class="text-lg font-bold">Welcome Back, <span id="homeUserName">Aspirant</span>!</h2>
+        <p class="text-xs text-indigo-100 leading-relaxed">Your ultimate platform for daily practice tests, mock exams, previous years' questions, and curated study notes.</p>
+        <div class="text-[10px] text-indigo-200/90 text-right font-medium pt-1">Created by Partha Majhi</div>
+      </div>
+
+      <!-- Quick Category Selectors -->
+      <div class="flex flex-col gap-2">
+        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Select Exam Category</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="selectHomeCategory('ssc')" class="p-3 bg-white border border-slate-200 hover:border-indigo-500 rounded-xl text-left flex flex-col gap-1 shadow-xs cursor-pointer group">
+            <span class="text-lg">📚</span>
+            <span class="text-xs font-bold text-slate-900 group-hover:text-indigo-600">SSC Exams</span>
+            <span class="text-[10px] text-slate-500">CGL, CHSL, MTS, GD</span>
+          </button>
+          <button type="button" onclick="selectHomeCategory('rrb')" class="p-3 bg-white border border-slate-200 hover:border-indigo-500 rounded-xl text-left flex flex-col gap-1 shadow-xs cursor-pointer group">
+            <span class="text-lg">🚂</span>
+            <span class="text-xs font-bold text-slate-900 group-hover:text-indigo-600">RRB Railway</span>
+            <span class="text-[10px] text-slate-500">NTPC, Group D, ALP</span>
+          </button>
+          <button type="button" onclick="selectHomeCategory('wbp')" class="p-3 bg-white border border-slate-200 hover:border-indigo-500 rounded-xl text-left flex flex-col gap-1 shadow-xs cursor-pointer group">
+            <span class="text-lg">👮‍♂️</span>
+            <span class="text-xs font-bold text-slate-900 group-hover:text-indigo-600">WBP & Police</span>
+            <span class="text-[10px] text-slate-500">Constable, SI, Excise</span>
+          </button>
+          <button type="button" onclick="selectHomeCategory('tet')" class="p-3 bg-white border border-slate-200 hover:border-indigo-500 rounded-xl text-left flex flex-col gap-1 shadow-xs cursor-pointer group">
+            <span class="text-lg">🍏</span>
+            <span class="text-xs font-bold text-slate-900 group-hover:text-indigo-600">WB Primary TET</span>
+            <span class="text-[10px] text-slate-500">Child Dev, Math, Bengali</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Mode Launchers -->
+      <div class="flex flex-col gap-2">
+        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Learning Modes</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="launchMode('practice')" class="p-3 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-xl text-left flex items-center gap-3 cursor-pointer">
+            <span class="text-xl">📝</span>
+            <div>
+              <div class="text-xs font-bold text-indigo-900">Practice Set</div>
+              <div class="text-[10px] text-indigo-600">Daily 25 Qs / sec</div>
+            </div>
+          </button>
+          <button type="button" onclick="launchMode('mock')" class="p-3 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-xl text-left flex items-center gap-3 cursor-pointer">
+            <span class="text-xl">⏱️</span>
+            <div>
+              <div class="text-xs font-bold text-rose-900">Full Mock Test</div>
+              <div class="text-[10px] text-rose-600">125 Qs timed exam</div>
+            </div>
+          </button>
+          <button type="button" onclick="launchMode('pyq')" class="p-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-xl text-left flex items-center gap-3 cursor-pointer">
+            <span class="text-xl">📚</span>
+            <div>
+              <div class="text-xs font-bold text-amber-900">PYQ Archive</div>
+              <div class="text-[10px] text-amber-600">Previous Year Papers</div>
+            </div>
+          </button>
+          <button type="button" onclick="launchMode('notes')" class="p-3 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-xl text-left flex items-center gap-3 cursor-pointer">
+            <span class="text-xl">📖</span>
+            <div>
+              <div class="text-xs font-bold text-emerald-900">Study Notes</div>
+              <div class="text-[10px] text-emerald-600">15-day auto update</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode & PYQ Year/Shift Bar (Hidden on Home Page) -->
+    <div id="modeBarContainer" class="hidden bg-slate-100 border-b border-slate-200 px-3 py-2 flex-col gap-1.5">
+      <div class="flex items-center justify-between mb-1">
+        <button type="button" onclick="goHome()" class="text-[11px] font-bold text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer">
+          <span>← Back to Home</span>
+        </button>
+        <span id="activeCategoryBadge" class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full uppercase">SSC</span>
+      </div>
+      <div class="grid grid-cols-4 gap-1 bg-slate-200/80 p-0.5 rounded-xl text-[11px] font-semibold">
+        <button onclick="changeMode('practice')" id="mode-practice" class="py-1 rounded-lg bg-white text-indigo-700 shadow-xs cursor-pointer">Practice</button>
+        <button onclick="changeMode('mock')" id="mode-mock" class="py-1 rounded-lg text-slate-600 cursor-pointer">Mock</button>
+        <button onclick="changeMode('pyq')" id="mode-pyq" class="py-1 rounded-lg text-slate-600 cursor-pointer">PYQ</button>
+        <button onclick="changeMode('notes')" id="mode-notes" class="py-1 rounded-lg text-slate-600 cursor-pointer">Notes</button>
+      </div>
+      <div id="pyqFilters" class="hidden flex items-center gap-1.5 mt-1">
+        <select id="pyqYearSelect" onchange="changePyqYear(this.value)" class="flex-1 bg-amber-50 border border-amber-300 text-amber-800 text-[11px] font-bold px-2 py-1 rounded-xl outline-none cursor-pointer">
+          <option value="2025">Year: 2025</option>
+          <option value="2024">Year: 2024</option>
+          <option value="2023">Year: 2023</option>
+          <option value="2022">Year: 2022</option>
+        </select>
+        <select id="pyqShiftSelect" onchange="changePyqShift(this.value)" class="flex-1 bg-indigo-50 border border-indigo-300 text-indigo-800 text-[11px] font-bold px-2 py-1 rounded-xl outline-none cursor-pointer">
+          <option value="shift1">Shift 1</option>
+          <option value="shift2">Shift 2</option>
+          <option value="shift3">Shift 3</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Body (Quiz Mode - Hidden on Home Page) -->
+    <div id="quizBody" class="hidden flex-1 overflow-y-auto flex-col gap-2.5 p-3">
+      
+      <!-- Stats Strip -->
+      <div class="grid grid-cols-4 gap-1 bg-white border border-slate-200 rounded-xl p-1.5 text-center text-[11px] shadow-xs">
+        <div class="bg-emerald-50 text-emerald-700 rounded-lg py-1 font-semibold">Cor: <span id="statCorrect">0</span></div>
+        <div class="bg-rose-50 text-rose-700 rounded-lg py-1 font-semibold">Wrg: <span id="statWrong">0</span></div>
+        <div class="bg-slate-100 text-slate-600 rounded-lg py-1 font-semibold">Left: <span id="statUnattempted">25</span></div>
+        <div class="bg-indigo-50 text-indigo-700 rounded-lg py-1 font-semibold">🎯 <span id="statAccuracy">0</span>%</div>
+      </div>
+
+      <!-- 5 Section Tabs (25 Qs each = 125 Qs per exam) -->
+      <nav aria-label="Quiz Sections" class="grid grid-cols-5 gap-1 bg-slate-200/80 p-1 rounded-xl text-[10px] sm:text-[11px]">
+        <button onclick="switchSection('math')" id="tab-math" class="py-1.5 px-0.5 rounded-lg font-semibold bg-white text-indigo-700 shadow-xs cursor-pointer truncate">Math</button>
+        <button onclick="switchSection('reasoning')" id="tab-reasoning" class="py-1.5 px-0.5 rounded-lg font-semibold text-slate-600 cursor-pointer truncate">Reason</button>
+        <button onclick="switchSection('english')" id="tab-english" class="py-1.5 px-0.5 rounded-lg font-semibold text-slate-600 cursor-pointer truncate">English</button>
+        <button onclick="switchSection('gk')" id="tab-gk" class="py-1.5 px-0.5 rounded-lg font-semibold text-slate-600 cursor-pointer truncate">GK/GS</button>
+        <button onclick="switchSection('ca')" id="tab-ca" class="py-1.5 px-0.5 rounded-lg font-semibold text-slate-600 cursor-pointer truncate">CA 26</button>
+      </nav>
+
+      <!-- Question Card -->
+      <main class="bg-white border border-slate-200 rounded-2xl shadow-xs p-3.5 flex flex-col gap-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-1 text-xs font-bold text-slate-700">
+            <button id="topPrevBtn" onclick="prevQuestion()" class="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-30 cursor-pointer">&lt;</button>
+            <button type="button" onclick="togglePalette()" class="px-2 py-1 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer flex items-center gap-1">
+              <span id="questionCounter">1/25</span><span class="text-[10px] text-slate-400">▾</span>
+            </button>
+            <button id="topNextBtn" onclick="nextQuestion()" class="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-30 cursor-pointer">&gt;</button>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="toggleHint()" title="Hint" class="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 text-xs cursor-pointer">💡</button>
+            <button onclick="copyQuestion()" title="Copy" class="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-indigo-50 text-xs cursor-pointer">📋</button>
+          </div>
+        </div>
+
+        <!-- Palette Drawer -->
+        <div id="paletteDrawer" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-2">
+          <div class="text-[10px] font-semibold text-slate-500 mb-1.5">Jump to Question (1–25)</div>
+          <div id="paletteGrid" class="grid grid-cols-5 gap-1.5"></div>
+        </div>
+
+        <!-- Hint Box -->
+        <div id="hintBox" class="hidden bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-2.5 text-xs bn-text">
+          <span class="font-semibold">💡 Hint:</span> <span id="hintText"></span>
+        </div>
+
+        <!-- Question Text -->
+        <div class="flex flex-col gap-1">
+          <p id="questionEn" class="text-sm font-semibold text-slate-900 leading-snug"></p>
+          <p id="questionBn" class="text-xs text-slate-600 bn-text leading-snug"></p>
+        </div>
+
+        <!-- Options -->
+        <div id="optionsContainer" class="flex flex-col gap-2"></div>
+
+        <!-- Quick Solve -->
+        <div id="quickSolveBox" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-3 py-2 text-xs bn-text flex items-start gap-1.5">
+          <span class="font-bold shrink-0">⚡ Quick:</span><span id="quickSolveText"></span>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+          <button id="prevBtn" onclick="prevQuestion()" class="py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs cursor-pointer disabled:opacity-40">Previous</button>
+          <button onclick="toggleSolution()" class="py-2 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs cursor-pointer">Solution 📖</button>
+          <button id="nextBtn" onclick="nextQuestion()" class="py-2 rounded-xl border border-slate-200 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs cursor-pointer disabled:opacity-40">Next</button>
+        </div>
+
+        <!-- Solution Panel -->
+        <div id="solutionPanel" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 bn-text leading-relaxed">
+          <div class="font-bold text-indigo-700 mb-1">সম্পূর্ণ সমাধান:</div>
+          <div id="solutionText" class="whitespace-pre-line"></div>
+        </div>
+
+        <!-- End of Test / Retake & Shuffle Banner -->
+        <div id="retakeBanner" class="hidden bg-indigo-50 border border-indigo-200 rounded-xl p-3 flex items-center justify-between gap-2">
+          <div class="text-xs text-indigo-900">
+            <div class="font-bold">🎉 Test Attempted!</div>
+            <div class="text-[10px] text-indigo-700">Want to practice again with shuffled questions?</div>
+          </div>
+          <button type="button" onclick="retakeShuffledExam(false)" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] shrink-0 cursor-pointer shadow-xs">🔀 Reset & Shuffle</button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Study Notes Body (Hidden on Home Page) -->
+    <div id="notesBody" class="hidden flex-1 overflow-y-auto flex-col gap-2.5 p-3">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] text-emerald-800 font-semibold">
+        <span>📚 Short Q&A Study Notes</span>
+        <span id="notesCycleBadge" class="bg-white px-2 py-0.5 rounded-lg border border-emerald-200 text-emerald-700">15-Day Auto Update</span>
+      </div>
+      <div id="notesContainer" class="flex flex-col gap-3"></div>
+    </div>
+
+    <!-- Scoreboard Modal -->
+    <div id="scoreboardModal" class="hidden absolute inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-sm p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">📊 Scoreboard (125 Qs)</h2>
+            <p class="text-[10px] text-slate-500">Marking: +2 Correct | -0.33 Wrong</p>
+          </div>
+          <button type="button" onclick="toggleScoreboard()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center cursor-pointer text-xs">✕</button>
+        </div>
+        <div id="sectionBreakdownContainer" class="flex flex-col gap-1.5 text-xs max-h-60 overflow-y-auto"></div>
+        <div class="flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-xl p-2.5 text-xs font-bold text-indigo-900">
+          <span>Total Score</span>
+          <span><span id="modalTotalMarks">0.00</span> / 250 (<span id="modalAccuracy">0</span>%)</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="resetQuiz()" class="w-full py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs cursor-pointer">🔄 Reset Set</button>
+          <button type="button" onclick="retakeShuffledExam()" class="w-full py-2 rounded-xl border border-indigo-200 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs cursor-pointer">🔀 Retake & Shuffle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Backdrop & Drawer -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="hidden absolute inset-0 z-40 bg-slate-950/50 backdrop-blur-xs transition-opacity"></div>
+    <aside id="sidebarDrawer" class="hidden absolute top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-slate-200 shadow-2xl flex flex-col justify-between p-4">
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🎯</span>
+            <span class="font-bold text-slate-900 text-sm">Shiksha Kshetra</span>
+          </div>
+          <button type="button" onclick="toggleSidebar()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer">✕</button>
+        </div>
+
+        <!-- User Profile Card -->
+        <div id="sidebarProfileCard" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 flex items-center gap-2.5">
+          <div id="userAvatar" class="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm shrink-0">G</div>
+          <div class="min-w-0 flex-1">
+            <div id="sidebarUserName" class="text-xs font-bold text-slate-900 truncate">Guest Student</div>
+            <div id="sidebarUserStatus" class="text-[10px] text-indigo-600 font-medium truncate">Not signed in</div>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex flex-col gap-1 text-xs font-semibold">
+          <button type="button" onclick="toggleSidebar(); goHome();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 flex items-center gap-2.5 cursor-pointer">
+            <span>🏠</span><span>Home Page</span>
+          </button>
+          <button type="button" onclick="toggleSidebar(); launchMode('practice');" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 flex items-center gap-2.5 cursor-pointer">
+            <span>📝</span><span>Practice Set</span>
+          </button>
+          <button type="button" onclick="toggleSidebar(); launchMode('mock');" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 flex items-center gap-2.5 cursor-pointer">
+            <span>⏱️</span><span>Full Mock Test</span>
+          </button>
+          <button type="button" onclick="toggleSidebar(); launchMode('pyq');" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 flex items-center gap-2.5 cursor-pointer">
+            <span>📚</span><span>Previous Year (PYQ)</span>
+          </button>
+          <button type="button" onclick="toggleSidebar(); launchMode('notes');" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 flex items-center gap-2.5 cursor-pointer">
+            <span>📖</span><span>Study Notes</span>
+          </button>
+          <button type="button" onclick="toggleSidebar(); toggleScoreboard();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 flex items-center gap-2.5 cursor-pointer">
+            <span>📊</span><span>Scoreboard</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Auth Action Button -->
+      <div class="pt-3 border-t border-slate-100">
+        <button id="sidebarAuthBtn" type="button" onclick="handleAuthClick()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs cursor-pointer shadow-xs">
+          🔐 Sign In / Login
+        </button>
+      </div>
+    </aside>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="hidden absolute inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-xs p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-bold text-slate-900">🔐 Student Login</h2>
+          <button type="button" onclick="toggleLoginModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer">✕</button>
+        </div>
+        <form onsubmit="submitLogin(event)" class="flex flex-col gap-2.5">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-600 block mb-1">Your Name</label>
+            <input id="loginNameInput" type="text" required placeholder="e.g. Partha Majhi" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500" />
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-600 block mb-1">Mobile or Email</label>
+            <input id="loginContactInput" type="text" required placeholder="e.g. 9876543210" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500" />
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs cursor-pointer mt-1">Continue</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="hidden absolute inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-xs p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><span>🔔</span> Notifications</h2>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="markAllNotificationsRead()" class="text-[10px] font-semibold text-indigo-600 hover:underline cursor-pointer">Mark all read</button>
+            <button type="button" onclick="toggleNotificationModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer">✕</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl text-[11px] font-semibold">
+          <button type="button" onclick="switchNotifTab('important')" id="notifTab-important" class="py-1 rounded-lg bg-white text-indigo-700 shadow-xs cursor-pointer">Important</button>
+          <button type="button" onclick="switchNotifTab('general')" id="notifTab-general" class="py-1 rounded-lg text-slate-600 cursor-pointer">General</button>
+        </div>
+        <div id="notificationList" class="flex flex-col gap-2 text-xs max-h-52 overflow-y-auto"></div>
+        <button type="button" onclick="toggleNotificationModal()" class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs cursor-pointer">Close</button>
+      </div>
+    </div>
+
+    <div id="toast" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-200">Copied!</div>
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('currentTime').innerText = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    function createRNG(seedStr) {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < seedStr.length; i++) {
+        h ^= seedStr.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return function() {
+        h += 0x6D2B79F5;
+        let t = Math.imul(h ^ (h >>> 15), 1 | h);
+        t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function randInt(rng, min, max) {
+      return Math.floor(rng() * (max - min + 1)) + min;
+    }
+
+    function shuffleArr(rng, arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function generateMath25(rng) {
+      const qs = [];
+      for (let i = 0; i < 25; i++) {
+        const type = i % 5;
+        if (type === 0) {
+          const cp = randInt(rng, 2, 20) * 50;
+          const pct = randInt(rng, 1, 5) * 5;
+          const sp = cp + (cp * pct) / 100;
+          const ansVal = pct + "%";
+          const opts = shuffleArr(rng, [pct + "%", (pct + 5) + "%", (pct + 10) + "%", Math.max(2, pct - 5) + "%"]);
+          qs.push({
+            qEn: `An article is bought for ₹${cp} and sold for ₹${sp}. Find the profit percentage.`,
+            qBn: `একটি জিনিস ₹${cp} টাকায় কিনে ₹${sp} টাকায় বিক্রি করলে শতকরা লাভ কত?`,
+            options: opts, ans: opts.indexOf(ansVal),
+            hint: `Profit = SP - CP = ₹${sp - cp}`,
+            quickSolve: `(${sp - cp}/${cp}) × 100 = ${pct}%`,
+            solution: `লাভ = ${sp} - ${cp} = ₹${sp - cp}। শতকরা লাভ = (${sp - cp} / ${cp}) × 100 = ${pct}%।`
+          });
+        } else if (type === 1) {
+          const p = randInt(rng, 2, 10) * 500;
+          const r = randInt(rng, 4, 12);
+          const t = randInt(rng, 2, 5);
+          const si = (p * r * t) / 100;
+          const opts = shuffleArr(rng, [`₹${si}`, `₹${si + 100}`, `₹${si + 250}`, `₹${Math.max(50, si - 100)}`]);
+          qs.push({
+            qEn: `Find the Simple Interest on ₹${p} at ${r}% per annum for ${t} years.`,
+            qBn: `বার্ষিক ${r}% সরল সুদের হারে ₹${p} টাকার ${t} বছরের সুদ কত?`,
+            options: opts, ans: opts.indexOf(`₹${si}`),
+            hint: `SI = (P × R × T) / 100`,
+            quickSolve: `(${p}×${r}×${t})/100 = ₹${si}`,
+            solution: `সরল সুদ = (${p} × ${r} × ${t}) / 100 = ₹${si}।`
+          });
+        } else if (type === 2) {
+          const mid = randInt(rng, 15, 65);
+          const opts = shuffleArr(rng, [`${mid + 4}`, `${mid + 2}`, `${mid + 6}`, `${mid - 2}`]);
+          qs.push({
+            qEn: `The average of 5 consecutive odd numbers is ${mid % 2 === 0 ? mid + 1 : mid}. What is the largest number?`,
+            qBn: `৫টি পরপর বিজোড় সংখ্যার গড় ${mid % 2 === 0 ? mid + 1 : mid}। সবচেয়ে বড় সংখ্যাটি কত?`,
+            options: opts, ans: opts.indexOf(`${(mid % 2 === 0 ? mid + 1 : mid) + 4}`),
+            hint: `Middle number = Average`,
+            quickSolve: `${mid % 2 === 0 ? mid + 1 : mid} + 4 = ${(mid % 2 === 0 ? mid + 1 : mid) + 4}`,
+            solution: `৫টি পরপর বিজোড় সংখ্যার গড় হলো ৩য় সংখ্যাটি। তাই বড় সংখ্যাটি = গড় + ৪ = ${(mid % 2 === 0 ? mid + 1 : mid) + 4}।`
+          });
+        } else if (type === 3) {
+          const kmh = randInt(rng, 2, 10) * 18;
+          const ms = (kmh * 5) / 18;
+          const opts = shuffleArr(rng, [`${ms} m/s`, `${ms + 5} m/s`, `${ms + 10} m/s`, `${Math.max(5, ms - 5)} m/s`]);
+          qs.push({
+            qEn: `Convert a speed of ${kmh} km/h into m/s.`,
+            qBn: `${kmh} কিমি/ঘণ্টা গতিবেগকে মিটার/সেকেন্ডে প্রকাশ করো।`,
+            options: opts, ans: opts.indexOf(`${ms} m/s`),
+            hint: `Multiply by 5/18`,
+            quickSolve: `${kmh} × 5/18 = ${ms} m/s`,
+            solution: `কিমি/ঘণ্টা থেকে মি/সে করতে ৫/১৮ দিয়ে গুণ করতে হয়: ${kmh} × (৫/১৮) = ${ms} মি/সে।`
+          });
+        } else {
+          const k = randInt(rng, 3, 12);
+          const ans = k * k - 2;
+          const opts = shuffleArr(rng, [`${ans}`, `${ans + 2}`, `${ans + 4}`, `${ans - 2}`]);
+          qs.push({
+            qEn: `If x + 1/x = ${k}, find the value of x² + 1/x².`,
+            qBn: `যদি x + 1/x = ${k} হয়, তবে x² + 1/x²-এর মান কত?`,
+            options: opts, ans: opts.indexOf(`${ans}`),
+            hint: `k² - 2`,
+            quickSolve: `${k}² - 2 = ${ans}`,
+            solution: `x² + 1/x² = k² - 2 = ${k}² - 2 = ${k * k} - 2 = ${ans}।`
+          });
+        }
+      }
+      return qs;
+    }
+
+    function generateReasoning25(rng) {
+      const qs = [];
+      for (let i = 0; i < 25; i++) {
+        const type = i % 4;
+        if (type === 0) {
+          const start = randInt(rng, 2, 15);
+          const diff = randInt(rng, 3, 11);
+          const s = [start, start + diff, start + 2*diff, start + 3*diff];
+          const ans = start + 4*diff;
+          const opts = shuffleArr(rng, [`${ans}`, `${ans + 2}`, `${ans - 2}`, `${ans + diff}`]);
+          qs.push({
+            qEn: `Find the next number in the series: ${s.join(', ')}, ?`,
+            qBn: `ধারাটির পরবর্তী সংখ্যা কত: ${s.join(', ')}, ?`,
+            options: opts, ans: opts.indexOf(`${ans}`),
+            hint: `Constant difference +${diff}`,
+            quickSolve: `${s[3]} + ${diff} = ${ans}`,
+            solution: `প্রতিটি পদের সাথে ${diff} যোগ করা হয়েছে। তাই ${s[3]} + ${diff} = ${ans}।`
+          });
+        } else if (type === 1) {
+          const n = randInt(rng, 2, 6);
+          const s = [n*n+1, (n+1)*(n+1)+1, (n+2)*(n+2)+1, (n+3)*(n+3)+1];
+          const ans = (n+4)*(n+4)+1;
+          const opts = shuffleArr(rng, [`${ans}`, `${ans + 2}`, `${ans - 1}`, `${ans + 4}`]);
+          qs.push({
+            qEn: `Complete the series: ${s.join(', ')}, ?`,
+            qBn: `শূন্যস্থান পূরণ করো: ${s.join(', ')}, ?`,
+            options: opts, ans: opts.indexOf(`${ans}`),
+            hint: `n² + 1 pattern`,
+            quickSolve: `${n+4}² + 1 = ${ans}`,
+            solution: `এখানে n² + 1 নিয়ম অনুসরণ করা হয়েছে। পরবর্তী পদ (${n+4})² + 1 = ${ans}।`
+          });
+        } else if (type === 2) {
+          const words = [["CAT", 24], ["DOG", 26], ["PEN", 35], ["BOOK", 43], ["BAT", 23], ["RAT", 39], ["SUN", 54], ["MOON", 57]];
+          const pick = words[randInt(rng, 0, words.length - 1)];
+          const shift = randInt(rng, 1, 5);
+          const coded = pick[1] + shift * pick[0].length;
+          const opts = shuffleArr(rng, [`${coded}`, `${coded + 2}`, `${coded - 2}`, `${coded + 4}`]);
+          qs.push({
+            qEn: `If A=${1+shift}, B=${2+shift}, C=${3+shift}..., then what is the code for ${pick[0]}?`,
+            qBn: `যদি A=${1+shift}, B=${2+shift}, C=${3+shift}... হয়, তবে ${pick[0]}-এর কোড কত?`,
+            options: opts, ans: opts.indexOf(`${coded}`),
+            hint: `Add ${shift} to each letter's position`,
+            quickSolve: `${pick[1]} + (${shift}×${pick[0].length}) = ${coded}`,
+            solution: `মূল যোগফল ${pick[1]} এবং প্রতিটি অক্ষরের সাথে ${shift} যোগ করলে হয় ${coded}।`
+          });
+        } else {
+          const dirs = ["North", "East", "South", "West"];
+          const bnDirs = ["উত্তর", "পূর্ব", "দক্ষিণ", "পশ্চিম"];
+          const startIdx = randInt(rng, 0, 3);
+          const turn = rng() > 0.5 ? "right" : "left";
+          const endIdx = turn === "right" ? (startIdx + 1) % 4 : (startIdx + 3) % 4;
+          qs.push({
+            qEn: `A person walks 5 km towards ${dirs[startIdx]}, then turns ${turn} and walks 3 km. Which direction is he facing now?`,
+            qBn: `একজন ব্যক্তি ${bnDirs[startIdx]} দিকে ৫ কিমি হেঁটে ${turn === 'right' ? 'ডানদিকে' : 'বাঁদিকে'} ৩ কিমি গেলেন। এখন তিনি কোন দিকে মুখ করে আছেন?`,
+            options: dirs, ans: endIdx,
+            hint: `90° ${turn} turn from ${dirs[startIdx]}`,
+            quickSolve: `${dirs[endIdx]} (${bnDirs[endIdx]})`,
+            solution: `${bnDirs[startIdx]} দিক থেকে ${turn === 'right' ? 'ডানদিকে' : 'বাঁদিকে'} ৯০° ঘুরলে ${bnDirs[endIdx]} দিক হয়।`
+          });
+        }
+      }
+      return qs;
+    }
+
+    const englishBank = [
+      { qEn: "Synonym of CANDID", qBn: "CANDID-এর সমার্থক শব্দ", options: ["Secretive", "Frank", "Dishonest", "Rude"], ans: 1, hint: "Honest & open", quickSolve: "Frank", solution: "Candid অর্থ অকপট বা Frank।" },
+      { qEn: "Antonym of OPTIMISTIC", qBn: "OPTIMISTIC-এর বিপরীত শব্দ", options: ["Hopeful", "Positive", "Pessimistic", "Cheerful"], ans: 2, hint: "Negative outlook", quickSolve: "Pessimistic", solution: "Optimistic (আশাবাদী)-এর বিপরীত Pessimistic (হতাশাবাদী)।" },
+      { qEn: "She is fond ___ classical music.", qBn: "শূন্যস্থান পূরণ করো", options: ["in", "of", "at", "with"], ans: 1, hint: "Fixed preposition", quickSolve: "of", solution: "Fond এর পর সবসময় 'of' বসে।" },
+      { qEn: "One word: A place where birds are kept", qBn: "পাখি রাখার স্থান", options: ["Apiary", "Aviary", "Aquarium", "Sanctuary"], ans: 1, hint: "Aves = Birds", quickSolve: "Aviary", solution: "Aviary অর্থ পক্ষীশালা।" },
+      { qEn: "Choose the correctly spelt word:", qBn: "সঠিক বানানটি বেছে নাও", options: ["Definately", "Definitely", "Definatly", "Definitly"], ans: 1, hint: "Finite", quickSolve: "Definitely", solution: "Definitely বানানটি সঠিক।" },
+      { qEn: "Synonym of ABANDON", qBn: "ABANDON-এর সমার্থক", options: ["Keep", "Leave", "Hold", "Support"], ans: 1, hint: "Give up", quickSolve: "Leave", solution: "Abandon অর্থ পরিত্যাগ করা (Leave)।" },
+      { qEn: "Antonym of BRAVE", qBn: "BRAVE-এর বিপরীত", options: ["Bold", "Coward", "Fearless", "Strong"], ans: 1, hint: "Timid", quickSolve: "Coward", solution: "Brave (সাহসী)-এর বিপরীত Coward (ভীরু)।" },
+      { qEn: "He is senior ___ me.", qBn: "সঠিক Preposition বসাও", options: ["to", "than", "from", "with"], ans: 0, hint: "Latin comparative", quickSolve: "to", solution: "Senior, Junior, Superior-এর পর 'to' বসে।" },
+      { qEn: "Idiom: 'A piece of cake' means", qBn: "বাগধারাটির অর্থ কী", options: ["Very difficult", "Very easy", "Sweet food", "Expensive"], ans: 1, hint: "Simple task", quickSolve: "Very easy", solution: "A piece of cake অর্থ খুব সহজ কাজ।" },
+      { qEn: "Plural of 'Mouse'", qBn: "Mouse-এর বহুবচন", options: ["Mouses", "Mice", "Mices", "Mouse"], ans: 1, hint: "Irregular plural", quickSolve: "Mice", solution: "Mouse-এর plural হলো Mice।" },
+      { qEn: "Synonym of COURAGE", qBn: "COURAGE-এর সমার্থক", options: ["Fear", "Bravery", "Weakness", "Timid"], ans: 1, hint: "Valor", quickSolve: "Bravery", solution: "Courage অর্থ সাহস বা Bravery।" },
+      { qEn: "Antonym of ARRIVAL", qBn: "ARRIVAL-এর বিপরীত", options: ["Coming", "Departure", "Reaching", "Entry"], ans: 1, hint: "Leaving", quickSolve: "Departure", solution: "Arrival (আগমন)-এর বিপরীত Departure (প্রস্থান)।" },
+      { qEn: "He is good ___ Mathematics.", qBn: "শূন্যস্থান পূরণ", options: ["at", "in", "on", "with"], ans: 0, hint: "Skill", quickSolve: "at", solution: "কোনো বিষয়ে দক্ষ বোঝাতে 'good at' বসে।" },
+      { qEn: "One who writes books", qBn: "যিনি বই লেখেন", options: ["Actor", "Author", "Artist", "Architect"], ans: 1, hint: "Writer", quickSolve: "Author", solution: "Author অর্থ লেখক।" },
+      { qEn: "Correctly spelt word:", qBn: "সঠিক বানান", options: ["Recieve", "Receive", "Riciive", "Receeve"], ans: 1, hint: "i before e except after c", quickSolve: "Receive", solution: "Receive সঠিক বানান।" },
+      { qEn: "Synonym of MOTIVATION", qBn: "MOTIVATION-এর সমার্থক", options: ["Discouragement", "Incentive", "Hinder", "Delay"], ans: 1, hint: "Encouragement", quickSolve: "Incentive", solution: "Motivation অর্থ প্রেরণা বা Incentive।" },
+      { qEn: "One who knows everything", qBn: "যিনি সব জানেন", options: ["Omnipresent", "Omniscient", "Omnipotent", "Optimist"], ans: 1, hint: "Sci = knowledge", quickSolve: "Omniscient", solution: "Omniscient অর্থ সর্বজ্ঞ।" },
+      { qEn: "Idiom: 'Break a leg' means", qBn: "বাগধারাটির অর্থ", options: ["Get injured", "Good luck", "Run fast", "Stop working"], ans: 1, hint: "Wish well", quickSolve: "Good luck", solution: "Break a leg অর্থ শুভকামনা (Good luck)।" },
+      { qEn: "Antonym of ANCIENT", qBn: "ANCIENT-এর বিপরীত", options: ["Old", "Modern", "Historic", "Antique"], ans: 1, hint: "New", quickSolve: "Modern", solution: "Ancient (প্রাচীন)-এর বিপরীত Modern (আধুনিক)।" },
+      { qEn: "Passive voice: 'He writes a letter.'", qBn: "Voice change করো", options: ["A letter is written by him.", "A letter was written by him.", "A letter is being written by him.", "He wrote a letter."], ans: 0, hint: "Present Indefinite", quickSolve: "A letter is written by him.", solution: "Present Indefinite-এ am/is/are + V3 হয়।" },
+      { qEn: "Synonym of DILIGENT", qBn: "DILIGENT-এর সমার্থক", options: ["Lazy", "Hardworking", "Careless", "Slow"], ans: 1, hint: "Industrious", quickSolve: "Hardworking", solution: "Diligent অর্থ পরিশ্রমী (Hardworking)।" },
+      { qEn: "The train arrived ___ time.", qBn: "শূন্যস্থান পূরণ", options: ["on", "at", "by", "into"], ans: 0, hint: "Punctual", quickSolve: "on", solution: "সঠিক সময়ে বোঝাতে 'on time' বসে।" },
+      { qEn: "Antonym of TRANSPARENT", qBn: "TRANSPARENT-এর বিপরীত", options: ["Clear", "Opaque", "Glass", "Bright"], ans: 1, hint: "Not clear", quickSolve: "Opaque", solution: "Transparent (স্বচ্ছ)-এর বিপরীত Opaque (অস্বচ্ছ)।" },
+      { qEn: "One word: Fear of water", qBn: "জলের প্রতি ভয়", options: ["Claustrophobia", "Hydrophobia", "Acrophobia", "Xenophobia"], ans: 1, hint: "Hydro = Water", quickSolve: "Hydrophobia", solution: "Hydrophobia অর্থ জলাতঙ্ক বা জলের ভয়।" },
+      { qEn: "Correctly spelt word:", qBn: "সঠিক বানান", options: ["Government", "Goverment", "Govtment", "Govrnment"], ans: 0, hint: "Govern + ment", quickSolve: "Government", solution: "Government সঠিক বানান।" }
+    ];
+
+    const gkBank = [
+      { qEn: "Father of Indian Constitution", qBn: "ভারতীয় সংবিধানের জনক কে?", options: ["Mahatma Gandhi", "Dr. B.R. Ambedkar", "Dr. Rajendra Prasad", "Nehru"], ans: 1, hint: "Drafting Committee Chairman", quickSolve: "Dr. B.R. Ambedkar", solution: "ড. বি. আর. আম্বেদকর।" },
+      { qEn: "Capital of Australia", qBn: "অস্ট্রেলিয়ার রাজধানী কী?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], ans: 2, hint: "Not Sydney", quickSolve: "Canberra", solution: "ক্যানবেরা।" },
+      { qEn: "Powerhouse of the cell", qBn: "কোষের শক্তিশাগর কাকে বলে?", options: ["Ribosome", "Nucleus", "Mitochondria", "Lysosome"], ans: 2, hint: "ATP production", quickSolve: "Mitochondria", solution: "মাইটোকন্ড্রিয়া।" },
+      { qEn: "Largest planet in Solar System", qBn: "সৌরজগতের বৃহত্তম গ্রহ কোনটি?", options: ["Mars", "Jupiter", "Saturn", "Venus"], ans: 1, hint: "Gas giant", quickSolve: "Jupiter", solution: "বৃহস্পতি (Jupiter)।" },
+      { qEn: "Chemical symbol of Gold", qBn: "স্বর্ণের রাসায়নিক প্রতীক কী?", options: ["Ag", "Au", "Fe", "Cu"], ans: 1, hint: "Aurum", quickSolve: "Au", solution: "Au (Aurum)।" },
+      { qEn: "Source of Ganga River", qBn: "গঙ্গা নদীর উৎস কোথায়?", options: ["Yamunotri", "Gangotri Glacier", "Siachen", "Mansarovar"], ans: 1, hint: "Uttarakhand", quickSolve: "Gangotri Glacier", solution: "গঙ্গোত্রী হিমবাহ।" },
+      { qEn: "Currency of Japan", qBn: "জাপানের মুদ্রার নাম কী?", options: ["Yuan", "Yen", "Won", "Ringgit"], ans: 1, hint: "Starts with Y", quickSolve: "Yen", solution: "ইয়েন (Yen)।" },
+      { qEn: "State animal of West Bengal", qBn: "পশ্চিমবঙ্গের রাজ্য পশু কী?", options: ["Royal Bengal Tiger", "Elephant", "Fishing Cat", "Rhino"], ans: 2, hint: "Cat family", quickSolve: "Fishing Cat", solution: "মেছো বিড়াল (Fishing Cat)।" },
+      { qEn: "Highest peak of West Bengal", qBn: "পশ্চিমবঙ্গের সর্বোচ্চ শৃঙ্গ কোনটি?", options: ["Sandakphu", "Tiger Hill", "Kanchenjunga", "Sinhlila"], ans: 0, hint: "Darjeeling", quickSolve: "Sandakphu", solution: "সান্দাকফু (৩৬৩৬ মিটার)।" },
+      { qEn: "RTE Act was passed in which year?", qBn: "শিক্ষার অধিকার আইন (RTE) কবে পাস হয়?", options: ["2002", "2005", "2009", "2020"], ans: 2, hint: "2009", quickSolve: "2009", solution: "২০০৯ সালে RTE আইন পাস হয়।" },
+      { qEn: "Battle of Plassey was fought in", qBn: "পলাশীর যুদ্ধ কবে হয়েছিল?", options: ["1757", "1764", "1857", "1905"], ans: 0, hint: "Siraj-ud-Daulah", quickSolve: "1757", solution: "১৭৫৭ সালের ২৩শে জুন।" },
+      { qEn: "SI unit of Electric Current", qBn: "তড়িৎ প্রবাহের এসআই একক কী?", options: ["Volt", "Ampere", "Ohm", "Watt"], ans: 1, hint: "A", quickSolve: "Ampere", solution: "অ্যাম্পিয়ার (Ampere)।" },
+      { qEn: "Which vitamin is produced by sunlight?", qBn: "সূর্যালোক থেকে কোন ভিটামিন পাওয়া যায়?", options: ["Vitamin A", "Vitamin C", "Vitamin D", "Vitamin K"], ans: 2, hint: "Bone health", quickSolve: "Vitamin D", solution: "ভিটামিন ডি।" },
+      { qEn: "First Governor-General of Independent India", qBn: "স্বাধীন ভারতের প্রথম গভর্নর-জেনারেল", options: ["Lord Mountbatten", "C. Rajagopalachari", "Lord Canning", "Lord Dalhousie"], ans: 0, hint: "1947", quickSolve: "Lord Mountbatten", solution: "লর্ড মাউন্টব্যাটন।" },
+      { qEn: "Longest river in India", qBn: "ভারতের দীর্ঘতম নদী কোনটি?", options: ["Brahmaputra", "Ganga", "Godavari", "Yamuna"], ans: 1, hint: "2525 km", quickSolve: "Ganga", solution: "গঙ্গা নদী।" },
+      { qEn: "Author of 'Gitanjali'", qBn: "'গীতাঞ্জলি'-র রচয়িতা কে?", options: ["Bankim Chandra", "Rabindranath Tagore", "Sarat Chandra", "Nazrul Islam"], ans: 1, hint: "Nobel 1913", quickSolve: "Rabindranath Tagore", solution: "রবীন্দ্রনাথ ঠাকুর।" },
+      { qEn: "Smallest state of India by area", qBn: "আয়তনে ভারতের ক্ষুদ্রতম রাজ্য কোনটি?", options: ["Sikkim", "Goa", "Tripura", "Manipur"], ans: 1, hint: "West coast", quickSolve: "Goa", solution: "গোয়া।" },
+      { qEn: "Hardest natural substance", qBn: "প্রকৃতির কঠিনতম পদার্থ কোনটি?", options: ["Iron", "Diamond", "Quartz", "Graphite"], ans: 1, hint: "Carbon allotrope", quickSolve: "Diamond", solution: "হীরা (Diamond)।" },
+      { qEn: "Founder of Kindergarten system", qBn: "কিন্ডারগার্টেন পদ্ধতির প্রবক্তা কে?", options: ["Froebel", "Montessori", "Dewey", "Rousseau"], ans: 0, hint: "German educator", quickSolve: "Froebel", solution: "ফ্রেডরিখ ফ্রোবেল।" },
+      { qEn: "Article 21A deals with", qBn: "সংবিধানের ২১এ ধারা কিসের সাথে যুক্ত?", options: ["Right to Equality", "Right to Education", "Right to Speech", "Right to Property"], ans: 1, hint: "6-14 years", quickSolve: "Right to Education", solution: "শিক্ষার অধিকার (Right to Education)।" },
+      { qEn: "National Voters' Day is celebrated on", qBn: "জাতীয় ভোটার দিবস কবে পালিত হয়?", options: ["15 Jan", "25 Jan", "26 Jan", "30 Jan"], ans: 1, hint: "January", quickSolve: "25 Jan", solution: "২৫শে জানুয়ারি।" },
+      { qEn: "Gas used in fire extinguishers", qBn: "অগ্নিনির্বাপক যন্ত্রে কোন গ্যাস ব্যবহৃত হয়?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], ans: 2, hint: "CO2", quickSolve: "Carbon Dioxide", solution: "কার্বন ডাই-অক্সাইড।" },
+      { qEn: "Sunderbans is famous for", qBn: "সুন্দরবন কিসের জন্য বিখ্যাত?", options: ["Lions", "Royal Bengal Tigers", "Rhinos", "Elephants"], ans: 1, hint: "Mangrove", quickSolve: "Royal Bengal Tigers", solution: "রয়েল বেঙ্গল টাইগার।" },
+      { qEn: "HQ of ISRO is located at", qBn: "ইসরো (ISRO)-র সদর দফতর কোথায়?", options: ["Mumbai", "New Delhi", "Bengaluru", "Hyderabad"], ans: 2, hint: "Silicon Valley of India", quickSolve: "Bengaluru", solution: "বেঙ্গালুরু।" },
+      { qEn: "pH value of pure water", qBn: "বিশুদ্ধ জলের pH মান কত?", options: ["5", "7", "9", "14"], ans: 1, hint: "Neutral", quickSolve: "7", solution: "৭ (নিরপেক্ষ)।" }
+    ];
+
+    const caBank = [
+      { qEn: "Who is the current Chief Justice of India (2025-26)?", qBn: "ভারতের বর্তমান প্রধান বিচারপতি কে?", options: ["Justice D.Y. Chandrachud", "Justice Sanjiv Khanna", "Justice B.R. Gavai", "Justice Surya Kant"], ans: 2, hint: "52nd CJI", quickSolve: "Justice B.R. Gavai", solution: "বিচারপতি বি.আর. গাভাই।" },
+      { qEn: "Which country hosted the 2026 ICC Men's T20 World Cup?", qBn: "২০২৬ আইসিসি পুরুষ টি-টোয়েন্টি বিশ্বকাপ কোন দেশ আয়োজন করেছে?", options: ["Australia", "India & Sri Lanka", "England", "South Africa"], ans: 1, hint: "Subcontinent", quickSolve: "India & Sri Lanka", solution: "ভারত ও শ্রীলঙ্কা যৌথভাবে।" },
+      { qEn: "India's first bullet train corridor is being built between", qBn: "ভারতের প্রথম বুলেট ট্রেন করিডোর কোথায় তৈরি হচ্ছে?", options: ["Delhi - Agra", "Mumbai - Ahmedabad", "Kolkata - Patna", "Chennai - Bengaluru"], ans: 1, hint: "Maharashtra-Gujarat", quickSolve: "Mumbai - Ahmedabad", solution: "মুম্বাই ও আহমেদাবাদের মধ্যে।" },
+      { qEn: "Who won the Nobel Peace Prize 2025?", qBn: "২০২৫ সালের নোবেল শান্তি পুরস্কার কে পেয়েছেন?", options: ["Nihon Hidankyo", "Maria Corina Machado", "UNHCR", "WHO"], ans: 1, hint: "Venezuela", quickSolve: "Maria Corina Machado", solution: "মারিয়া কোরিনা মাচাদো।" },
+      { qEn: "Current Railway Minister of India", qBn: "ভারতের বর্তমান রেলমন্ত্রী কে?", options: ["Ashwini Vaishnaw", "Piyush Goyal", "Nitin Gadkari", "Amit Shah"], ans: 0, hint: "Also IT Minister", quickSolve: "Ashwini Vaishnaw", solution: "অশ্বিনী বৈষ্ণব।" },
+      { qEn: "ISRO's Gaganyaan mission is related to", qBn: "ইসরোর 'গগনযান' মিশন কিসের সাথে যুক্ত?", options: ["Moon landing", "Human spaceflight", "Sun study", "Mars orbiter"], ans: 1, hint: "Astronauts", quickSolve: "Human spaceflight", solution: "মহাকাশে মানুষ পাঠানো।" },
+      { qEn: "Which state launched 'Lakshmir Bhandar' scheme?", qBn: "'লক্ষ্মীর ভাণ্ডার' প্রকল্প কোন রাজ্যের?", options: ["Odisha", "West Bengal", "Assam", "Bihar"], ans: 1, hint: "WB Govt", quickSolve: "West Bengal", solution: "পশ্চিমবঙ্গ সরকার।" },
+      { qEn: "2026 Asian Games is scheduled to be held in", qBn: "২০২৬ এশিয়ান গেমস কোথায় অনুষ্ঠিত হবে?", options: ["Tokyo", "Aichi-Nagoya", "Doha", "Bangkok"], ans: 1, hint: "Japan", quickSolve: "Aichi-Nagoya", solution: "জাপানের আইচি-নাগোয়ায়।" },
+      { qEn: "Who is the current Governor of RBI?", qBn: "আরবিআই (RBI)-এর বর্তমান গভর্নর কে?", options: ["Shaktikanta Das", "Sanjay Malhotra", "Urjit Patel", "Raghuram Rajan"], ans: 1, hint: "26th Governor", quickSolve: "Sanjay Malhotra", solution: "সঞ্জয় মালহোত্রা।" },
+      { qEn: "Which Indian city is known as the 'Greenest City' in Swachh Survekshan?", qBn: "স্বচ্ছ সর্বেক্ষণে কোন শহর শীর্ষে থাকে?", options: ["Indore", "Surat", "Bhopal", "Pune"], ans: 0, hint: "MP", quickSolve: "Indore", solution: "ইন্দোর (মধ্যপ্রদেশ)।" },
+      { qEn: "UPI was developed by which organization?", qBn: "ইউপিআই (UPI) কোন সংস্থা তৈরি করেছে?", options: ["RBI", "NPCI", "SBI", "SEBI"], ans: 1, hint: "Payments Corp", quickSolve: "NPCI", solution: "NPCI (National Payments Corporation of India)।" },
+      { qEn: "Current Chief Minister of West Bengal", qBn: "পশ্চিমবঙ্গের বর্তমান মুখ্যমন্ত্রী কে?", options: ["Mamata Banerjee", "Suvendu Adhikari", "C.V. Ananda Bose", "Abhishek Banerjee"], ans: 0, hint: "AITC", quickSolve: "Mamata Banerjee", solution: "মমতা বন্দ্যোপাধ্যায়।" },
+      { qEn: "World Environment Day is observed on", qBn: "বিশ্ব পরিবেশ দিবস কবে পালিত হয়?", options: ["5 June", "22 April", "16 Sept", "1 May"], ans: 0, hint: "June", quickSolve: "5 June", solution: "৫ই জুন।" },
+      { qEn: "Which country is the newest member of BRICS?", qBn: "ব্রিকস (BRICS)-এর নতুন সদস্য দেশ কোনটি?", options: ["Indonesia", "Pakistan", "Nepal", "Sri Lanka"], ans: 0, hint: "Southeast Asia", quickSolve: "Indonesia", solution: "ইন্দোনেশিয়া।" },
+      { qEn: "National Science Day in India is on", qBn: "জাতীয় বিজ্ঞান দিবস কবে পালিত হয়?", options: ["28 Feb", "15 March", "11 May", "22 Dec"], ans: 0, hint: "C.V. Raman", quickSolve: "28 Feb", solution: "২৮শে ফেব্রুয়ারি।" },
+      { qEn: "Who is the current President of India?", qBn: "ভারতের বর্তমান রাষ্ট্রপতি কে?", options: ["Ram Nath Kovind", "Droupadi Murmu", "Jagdeep Dhankhar", "Pratibha Patil"], ans: 1, hint: "15th President", quickSolve: "Droupadi Murmu", solution: "দ্রৌপদী মুর্মু।" },
+      { qEn: "Which Indian won Gold in Javelin at Paris Olympics?", qBn: "প্যারিস অলিম্পিকে জ্যাভলিনে ভারতের হয়ে পদক জিতেছিলেন কে?", options: ["Neeraj Chopra", "Kishore Jena", "Bajrang Punia", "Manu Bhaker"], ans: 0, hint: "Silver in 2024, Gold in 2020", quickSolve: "Neeraj Chopra", solution: "নীরজ চোপড়া।" },
+      { qEn: "PM-KISAN scheme provides how much per year?", qBn: "পিএম-কিষাণ প্রকল্পে বছরে কত টাকা দেওয়া হয়?", options: ["₹4,000", "₹6,000", "₹8,000", "₹10,000"], ans: 1, hint: "3 installments of 2000", quickSolve: "₹6,000", solution: "বছরে ৬,০০০ টাকা।" },
+      { qEn: "HQ of UNESCO is in", qBn: "ইউনেস্কো (UNESCO)-র সদর দফতর কোথায়?", options: ["Geneva", "Paris", "New York", "Vienna"], ans: 1, hint: "France", quickSolve: "Paris", solution: "প্যারিস (ফ্রান্স)।" },
+      { qEn: "First solar mission of India", qBn: "ভারতের প্রথম সৌর মিশনের নাম কী?", options: ["Chandrayaan-3", "Aditya-L1", "Mangalyaan", "Surya-1"], ans: 1, hint: "L1 point", quickSolve: "Aditya-L1", solution: "আদিত্য-এল১ (Aditya-L1)।" },
+      { qEn: "International Yoga Day is celebrated on", qBn: "আন্তর্জাতিক যোগ দিবস কবে পালিত হয়?", options: ["21 June", "21 May", "5 June", "1 July"], ans: 0, hint: "Longest day", quickSolve: "21 June", solution: "২১শে জুন।" },
+      { qEn: "Which state has the longest coastline in India?", qBn: "ভারতের কোন রাজ্যের উপকূলরেখা দীর্ঘতম?", options: ["Maharashtra", "Gujarat", "Tamil Nadu", "Andhra Pradesh"], ans: 1, hint: "West India", quickSolve: "Gujarat", solution: "গুজরাট।" },
+      { qEn: "Who is the CEO of NITI Aayog?", qBn: "নীতি আয়োগের বর্তমান সিইও কে?", options: ["B.V.R. Subrahmanyam", "Parameswaran Iyer", "Amitabh Kant", "Suman Bery"], ans: 0, hint: "IAS", quickSolve: "B.V.R. Subrahmanyam", solution: "বি.ভি.আর. সুব্রহ্মণ্যম।" },
+      { qEn: "2026 Winter Olympics was held in", qBn: "২০২৬ শীতকালীন অলিম্পিক কোথায় অনুষ্ঠিত হয়েছে?", options: ["Beijing", "Milan-Cortina", "Paris", "Los Angeles"], ans: 1, hint: "Italy", quickSolve: "Milan-Cortina", solution: "মিলান-কর্টিনা (ইতালি)।" },
+      { qEn: "National Education Policy (NEP) was approved in", qBn: "নতুন জাতীয় শিক্ষানীতি (NEP) কবে অনুমোদিত হয়?", options: ["2018", "2019", "2020", "2022"], ans: 2, hint: "2020", quickSolve: "2020", solution: "২০২০ সালে।" }
+    ];
+
+    const studyNotesSets = [
+      [
+        {
+          headline: "১. ভারতের সংবিধানের গুরুত্বপূর্ণ সংশোধনীসমূহ",
+          color: "text-indigo-700 border-indigo-200",
+          points: [
+            "<span class='hl-word'>৪২তম সংশোধনী (১৯৭৬)</span>: একে <span class='ul-word'>মিনি সংবিধান</span> বলা হয়। এর মাধ্যমে 'সমাজতান্ত্রিক', 'ধর্মনিরপেক্ষ' ও 'সংহতি' শব্দগুলো যুক্ত হয়।",
+            "<span class='hl-word'>৪৪তম সংশোধনী (১৯৭৮)</span>: সম্পত্তির অধিকারকে মৌলিক অধিকার থেকে বাদ দিয়ে <span class='ul-word'>আইনি অধিকারে</span> পরিণত করা হয়।",
+            "<span class='hl-word'>৮৬তম সংশোধনী (২০০২)</span>: ৬-১৪ বছর বয়সী শিশুদের জন্য <span class='ul-word'>বিনামূল্যে বাধ্যতামূলক শিক্ষা</span> (অনুচ্ছেদ 21A) যুক্ত হয়।"
+          ]
+        },
+        {
+          headline: "২. পশ্চিমবঙ্গের নদনদী ও উৎপত্তিস্থল",
+          color: "text-emerald-700 border-emerald-200",
+          points: [
+            "<span class='hl-word'>দামোদর নদ</span>: ঝাড়খণ্ডের ছোটনাগপুর মালভূমির <span class='ul-word'>খামারপাত পাহাড়</span> থেকে উৎপন্ন। একে 'বাংলার দুঃখ' বলা হতো।",
+            "<span class='hl-word'>তিস্তা নদী</span>: সিকিমের <span class='ul-word'>জেমু হিমবাহ</span> থেকে উৎপন্ন হয়ে উত্তরবঙ্গের ওপর দিয়ে প্রবাহিত হয়েছে।"
+          ]
+        },
+        {
+          headline: "৩. গুরুত্বপূর্ণ ভিটামিন ও অভাবজনিত রোগ",
+          color: "text-rose-700 border-rose-200",
+          points: [
+            "<span class='hl-word'>ভিটামিন A (রেটিনল)</span>: অভাবে <span class='ul-word'>রাতকানা রোগ</span> হয়।",
+            "<span class='hl-word'>ভিটামিন C (অ্যাসকরবিক অ্যাসিড)</span>: অভাবে <span class='ul-word'>স্কার্ভি রোগ</span> হয়।",
+            "<span class='hl-word'>ভিটামিন D (ক্যালসিফেরল)</span>: অভাবে <span class='ul-word'>রিকেট রোগ</span> হয়।"
+          ]
+        }
+      ],
+      [
+        {
+          headline: "১. ভারতের গুরুত্বপূর্ণ ঐতিহাসিক যুদ্ধ",
+          color: "text-amber-700 border-amber-200",
+          points: [
+            "<span class='hl-word'>পলাশীর যুদ্ধ (১৭৫৭)</span>: ২৩শে জুন সিরাজ-উদ-দৌলা ও <span class='ul-word'>লর্ড ক্লাইভের</span> মধ্যে সংঘটিত হয়।",
+            "<span class='hl-word'>বক্সারের যুদ্ধ (১৭৬৪)</span>: মীর কাসিম ও ইংরেজদের মধ্যে হয়, যা <span class='ul-word'>ব্রিটিশ শাসন</span> পাকাপোক্ত করে।"
+          ]
+        },
+        {
+          headline: "২. সৌরজগতের গুরুত্বপূর্ণ তথ্য",
+          color: "text-indigo-700 border-indigo-200",
+          points: [
+            "<span class='hl-word'>বৃহস্পতি (Jupiter)</span>: সৌরজগতের <span class='ul-word'>বৃহত্তম গ্রহ</span>।",
+            "<span class='hl-word'>শুক্র (Venus)</span>: একে <span class='ul-word'>সন্ধ্যাতারা ও শুকতারা</span> বলা হয়; এটি উষ্ণতম গ্রহ।"
+          ]
+        }
+      ]
+    ];
+
+    const categoryNames = {
+      ssc: 'SSC Exams',
+      rrb: 'RRB Railway',
+      wbp: 'WBP & Police',
+      tet: 'WB Primary TET'
+    };
+
+    let currentCategory = 'ssc';
+    let currentMode = 'practice';
+    let currentPyqYear = '2025';
+    let currentPyqShift = 'shift1';
+    let currentSection = 'math';
+    let currentIndex = 0;
+    let activeQuestions = {};
+    let userState = {};
+    let mockTimerInterval = null;
+    let mockSecondsLeft = 3600;
+    let isHomeView = true;
+
+    function updateDynamicHeader(inHome) {
+      const actions = document.getElementById('headerQuizActions');
+      const titleEl = document.getElementById('appTitleHeader');
+      const badgeEl = document.getElementById('dailyDateBadge');
+      if (inHome) {
+        actions.classList.add('hidden');
+        actions.classList.remove('flex');
+        titleEl.innerText = 'Shiksha Kshetra';
+        badgeEl.innerText = 'ALL GOVT EXAM STUDIO';
+      } else {
+        actions.classList.remove('hidden');
+        actions.classList.add('flex');
+        titleEl.innerText = categoryNames[currentCategory] || 'Shiksha Kshetra';
+      }
+    }
+
+    function getTodayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getSetKey() {
+      if (currentMode === 'pyq') return `${currentCategory}_pyq_${currentPyqYear}_${currentPyqShift}`;
+      return `${currentCategory}_${currentMode}_${getTodayKey()}`;
+    }
+
+    function getShuffleCount() {
+      try {
+        return parseInt(localStorage.getItem('skpro_shuffle_' + getSetKey()) || '0', 10);
+      } catch (e) { return 0; }
+    }
+
+    function buildQuestionSet() {
+      const baseKey = getSetKey();
+      const sCount = getShuffleCount();
+      const seedKey = sCount > 0 ? `${baseKey}_s${sCount}` : baseKey;
+      const rng = createRNG(seedKey);
+      activeQuestions = {
+        math: shuffleArr(rng, generateMath25(createRNG(seedKey + '_math'))),
+        reasoning: shuffleArr(rng, generateReasoning25(createRNG(seedKey + '_reason'))),
+        english: shuffleArr(rng, englishBank).slice(0, 25),
+        gk: shuffleArr(rng, gkBank).slice(0, 25),
+        ca: shuffleArr(rng, caBank).slice(0, 25)
+      };
+    }
+
+    function loadUserState(forceReset = false) {
+      const storageKey = 'skpro_' + getSetKey();
+      if (!forceReset) {
+        try {
+          const saved = localStorage.getItem(storageKey);
+          if (saved) { userState = JSON.parse(saved); return; }
+        } catch (e) {}
+      }
+      userState = {
+        math: new Array(25).fill(null),
+        reasoning: new Array(25).fill(null),
+        english: new Array(25).fill(null),
+        gk: new Array(25).fill(null),
+        ca: new Array(25).fill(null)
+      };
+      saveUserState();
+    }
+
+    function saveUserState() {
+      try {
+        localStorage.setItem('skpro_' + getSetKey(), JSON.stringify(userState));
+      } catch (e) {}
+    }
+
+    function updateHeaderBadge() {
+      const d = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      const badge = document.getElementById('dailyDateBadge');
+      if (currentMode === 'practice') badge.innerText = `Daily Auto Set • ${d}`;
+      else if (currentMode === 'mock') badge.innerText = `Full Mock Test • 125 Qs`;
+      else if (currentMode === 'pyq') badge.innerText = `PYQ ${currentPyqYear} • ${currentPyqShift.toUpperCase()}`;
+      else badge.innerText = `Study Notes • 15-Day Cycle`;
+      
+      document.getElementById('activeCategoryBadge').innerText = currentCategory.toUpperCase();
+    }
+
+    function startMockTimer() {
+      clearInterval(mockTimerInterval);
+      const badge = document.getElementById('mockTimerBadge');
+      if (currentMode !== 'mock') {
+        badge.classList.add('hidden');
+        return;
+      }
+      badge.classList.remove('hidden');
+      mockSecondsLeft = 3600;
+      mockTimerInterval = setInterval(() => {
+        if (mockSecondsLeft <= 0) { clearInterval(mockTimerInterval); return; }
+        mockSecondsLeft--;
+        const m = Math.floor(mockSecondsLeft / 60);
+        const s = mockSecondsLeft % 60;
+        badge.innerText = `⏱ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    function goHome() {
+      isHomeView = true;
+      clearInterval(mockTimerInterval);
+      document.getElementById('mockTimerBadge').classList.add('hidden');
+      document.getElementById('homePageBody').classList.remove('hidden');
+      document.getElementById('homePageBody').classList.add('flex');
+      document.getElementById('modeBarContainer').classList.add('hidden');
+      document.getElementById('modeBarContainer').classList.remove('flex');
+      document.getElementById('quizBody').classList.add('hidden');
+      document.getElementById('quizBody').classList.remove('flex');
+      document.getElementById('notesBody').classList.add('hidden');
+      document.getElementById('notesBody').classList.remove('flex');
+      updateDynamicHeader(true);
+      
+      const savedUser = localStorage.getItem('skpro_user');
+      if (savedUser) {
+        const u = JSON.parse(savedUser);
+        document.getElementById('homeUserName').innerText = u.name;
+      } else {
+        document.getElementById('homeUserName').innerText = 'Aspirant';
+      }
+    }
+
+    function selectHomeCategory(cat) {
+      currentCategory = cat;
+      document.getElementById('examCategorySelect').value = cat;
+      launchMode('practice');
+    }
+
+    function launchMode(mode) {
+      if (isHomeView) {
+        window.history.pushState({ view: 'section' }, '', '');
+      }
+      isHomeView = false;
+      currentMode = mode;
+      currentIndex = 0;
+      updateDynamicHeader(false);
+      
+      document.getElementById('homePageBody').classList.add('hidden');
+      document.getElementById('homePageBody').classList.remove('flex');
+      document.getElementById('modeBarContainer').classList.remove('hidden');
+      document.getElementById('modeBarContainer').classList.add('flex');
+
+      ['practice', 'mock', 'pyq', 'notes'].forEach(m => {
+        const btn = document.getElementById(`mode-${m}`);
+        btn.className = m === mode ? "py-1 rounded-lg bg-white text-indigo-700 shadow-xs cursor-pointer" : "py-1 rounded-lg text-slate-600 cursor-pointer";
+      });
+      const pyqFilters = document.getElementById('pyqFilters');
+      if (mode === 'pyq') pyqFilters.classList.remove('hidden');
+      else pyqFilters.classList.add('hidden');
+
+      const quizBody = document.getElementById('quizBody');
+      const notesBody = document.getElementById('notesBody');
+      if (mode === 'notes') {
+        quizBody.classList.add('hidden');
+        quizBody.classList.remove('flex');
+        notesBody.classList.remove('hidden');
+        notesBody.classList.add('flex');
+        updateHeaderBadge();
+        renderNotes();
+      } else {
+        notesBody.classList.add('hidden');
+        notesBody.classList.remove('flex');
+        quizBody.classList.remove('hidden');
+        quizBody.classList.add('flex');
+        initSet();
+      }
+    }
+
+    function changeExamCategory(cat) {
+      currentCategory = cat;
+      currentIndex = 0;
+      updateDynamicHeader(false);
+      initSet();
+    }
+
+    function changeMode(mode) {
+      currentMode = mode;
+      ['practice', 'mock', 'pyq', 'notes'].forEach(m => {
+        const btn = document.getElementById(`mode-${m}`);
+        btn.className = m === mode ? "py-1 rounded-lg bg-white text-indigo-700 shadow-xs cursor-pointer" : "py-1 rounded-lg text-slate-600 cursor-pointer";
+      });
+      const pyqFilters = document.getElementById('pyqFilters');
+      if (mode === 'pyq') pyqFilters.classList.remove('hidden');
+      else pyqFilters.classList.add('hidden');
+
+      const quizBody = document.getElementById('quizBody');
+      const notesBody = document.getElementById('notesBody');
+      if (mode === 'notes') {
+        quizBody.classList.add('hidden');
+        quizBody.classList.remove('flex');
+        notesBody.classList.remove('hidden');
+        notesBody.classList.add('flex');
+        updateHeaderBadge();
+        renderNotes();
+      } else {
+        notesBody.classList.add('hidden');
+        notesBody.classList.remove('flex');
+        quizBody.classList.remove('hidden');
+        quizBody.classList.add('flex');
+        currentIndex = 0;
+        initSet();
+      }
+    }
+
+    function changePyqYear(yr) {
+      currentPyqYear = yr;
+      currentIndex = 0;
+      initSet();
+    }
+
+    function changePyqShift(sh) {
+      currentPyqShift = sh;
+      currentIndex = 0;
+      initSet();
+    }
+
+    function switchSection(sec) {
+      currentSection = sec;
+      currentIndex = 0;
+      ['math', 'reasoning', 'english', 'gk', 'ca'].forEach(s => {
+        const btn = document.getElementById(`tab-${s}`);
+        btn.className = s === sec ? "py-1.5 px-0.5 rounded-lg font-semibold bg-white text-indigo-700 shadow-xs cursor-pointer truncate" : "py-1.5 px-0.5 rounded-lg font-semibold text-slate-600 cursor-pointer truncate";
+      });
+      renderQuestion();
+    }
+
+    function initSet() {
+      updateHeaderBadge();
+      buildQuestionSet();
+      loadUserState();
+      startMockTimer();
+      renderQuestion();
+    }
+
+    function renderNotes() {
+      const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+      const cycleIndex = Math.floor(daysSinceEpoch / 15) % studyNotesSets.length;
+      const daysLeft = 15 - (daysSinceEpoch % 15);
+      document.getElementById('notesCycleBadge').innerText = `Next Update: ${daysLeft}d`;
+
+      const container = document.getElementById('notesContainer');
+      const currentNotes = studyNotesSets[cycleIndex];
+      container.innerHTML = currentNotes.map(note => `
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs">
+          <h3 class="text-xs sm:text-sm font-bold pb-1.5 mb-2 border-b ${note.color} bn-text">${note.headline}</h3>
+          <ul class="list-disc pl-4 space-y-1.5 text-xs text-slate-700 bn-text leading-relaxed">
+            ${note.points.map(pt => `<li>${pt}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+    }
+
+    function downloadCurrentPDF() {
+      if (currentMode === 'notes') {
+        const el = document.getElementById('notesContainer');
+        html2pdf().set({ margin: 10, filename: 'Shiksha_Kshetra_Study_Notes.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(el).save();
+      } else {
+        const qList = activeQuestions[currentSection];
+        const wrapper = document.createElement('div');
+        wrapper.style.padding = '15px';
+        wrapper.style.fontFamily = 'sans-serif';
+        wrapper.innerHTML = `<h2 style="color:#1e3a8a;margin-bottom:10px;">Shiksha Kshetra — ${currentCategory.toUpperCase()} (${currentMode.toUpperCase()}) | ${currentSection.toUpperCase()}</h2>` +
+          qList.map((q, i) => `<div style="margin-bottom:12px;border-bottom:1px solid #e2e8f0;padding-bottom:8px;">
+            <p style="font-weight:bold;font-size:13px;">${i+1}. ${q.qEn}</p>
+            <p style="font-size:12px;color:#475569;">${q.qBn}</p>
+            <p style="font-size:12px;color:#047857;margin-top:4px;"><strong>Ans:</strong> ${q.options[q.ans]}</p>
+          </div>`).join('');
+        html2pdf().set({ margin: 10, filename: `Shiksha_Kshetra_${currentSection}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(wrapper).save();
+      }
+    }
+
+    function renderQuestion() {
+      const qList = activeQuestions[currentSection];
+      const q = qList[currentIndex];
+      const selectedOpt = userState[currentSection][currentIndex];
+
+      document.getElementById('questionCounter').innerText = `${currentIndex + 1}/25`;
+      document.getElementById('topPrevBtn').disabled = currentIndex === 0;
+      document.getElementById('topNextBtn').disabled = currentIndex === 24;
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === 24;
+
+      document.getElementById('questionEn').innerText = `${currentIndex + 1}. ${q.qEn}`;
+      document.getElementById('questionBn').innerText = q.qBn;
+
+      const optContainer = document.getElementById('optionsContainer');
+      optContainer.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      q.options.forEach((optText, idx) => {
+        let boxClasses = "option-box w-full text-left p-2.5 rounded-xl border text-xs sm:text-sm font-medium flex items-center justify-between cursor-pointer ";
+        let badgeClasses = "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ";
+
+        if (selectedOpt === null) {
+          boxClasses += "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50 text-slate-800";
+          badgeClasses += "bg-slate-100 text-slate-600";
+        } else if (idx === q.ans) {
+          boxClasses += "border-emerald-300 bg-emerald-50 text-emerald-900 font-semibold";
+          badgeClasses += "bg-emerald-200 text-emerald-800";
+        } else if (selectedOpt === idx && idx !== q.ans) {
+          boxClasses += "border-rose-300 bg-rose-50 text-rose-900";
+          badgeClasses += "bg-rose-200 text-rose-800";
+        } else {
+          boxClasses += "border-slate-200 bg-white opacity-50 text-slate-500";
+          badgeClasses += "bg-slate-100 text-slate-400";
+        }
+
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = boxClasses;
+        btn.onclick = () => selectOption(idx);
+        btn.innerHTML = `<div class="flex items-center gap-2.5"><span class="${badgeClasses}">${letters[idx]}</span><span>${optText}</span></div>${selectedOpt !== null && idx === q.ans ? '<span class="text-emerald-600 font-bold">✓</span>' : ''}${selectedOpt === idx && idx !== q.ans ? '<span class="text-rose-600 font-bold">✕</span>' : ''}`;
+        optContainer.appendChild(btn);
+      });
+
+      document.getElementById('hintBox').classList.add('hidden');
+      document.getElementById('hintText').innerText = q.hint;
+      document.getElementById('solutionPanel').classList.add('hidden');
+      document.getElementById('solutionText').innerText = q.solution;
+
+      const quickSolveBox = document.getElementById('quickSolveBox');
+      if (selectedOpt !== null) {
+        quickSolveBox.classList.remove('hidden');
+        document.getElementById('quickSolveText').innerText = q.quickSolve;
+      } else {
+        quickSolveBox.classList.add('hidden');
+      }
+      const banner = document.getElementById('retakeBanner');
+      const allAttempted = userState[currentSection].every(a => a !== null);
+      if (banner) {
+        if (allAttempted || (currentIndex === 24 && selectedOpt !== null)) {
+          banner.classList.remove('hidden');
+        } else {
+          banner.classList.add('hidden');
+        }
+      }
+      updateStats();
+    }
+
+    function selectOption(idx) {
+      if (userState[currentSection][currentIndex] !== null) return;
+      userState[currentSection][currentIndex] = idx;
+      saveUserState();
+      renderQuestion();
+    }
+
+    function nextQuestion() { if (currentIndex < 24) { currentIndex++; renderQuestion(); } }
+    function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+    function toggleHint() { document.getElementById('hintBox').classList.toggle('hidden'); }
+    function toggleSolution() { document.getElementById('solutionPanel').classList.toggle('hidden'); }
+    function togglePalette() {
+      const d = document.getElementById('paletteDrawer');
+      d.classList.toggle('hidden');
+      if (!d.classList.contains('hidden')) renderPaletteGrid();
+    }
+
+    function renderPaletteGrid() {
+      const grid = document.getElementById('paletteGrid');
+      grid.innerHTML = '';
+      const qList = activeQuestions[currentSection];
+      qList.forEach((q, idx) => {
+        const sel = userState[currentSection][idx];
+        let bg = "bg-slate-100 text-slate-700 border-slate-200";
+        if (sel !== null) bg = sel === q.ans ? "bg-emerald-500 text-white border-emerald-600" : "bg-rose-500 text-white border-rose-600";
+        if (idx === currentIndex) bg += " ring-2 ring-indigo-600 font-bold";
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = `w-full h-7 rounded-lg border text-xs font-semibold flex items-center justify-center cursor-pointer ${bg}`;
+        btn.innerText = idx + 1;
+        btn.onclick = () => { currentIndex = idx; renderQuestion(); document.getElementById('paletteDrawer').classList.add('hidden'); };
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateStats() {
+      const ansArr = userState[currentSection];
+      const qList = activeQuestions[currentSection];
+      let c = 0, w = 0, u = 0;
+      ansArr.forEach((a, i) => {
+        if (a === null) u++;
+        else if (a === qList[i].ans) c++;
+        else w++;
+      });
+      document.getElementById('statCorrect').innerText = c;
+      document.getElementById('statWrong').innerText = w;
+      document.getElementById('statUnattempted').innerText = u;
+      document.getElementById('statAccuracy').innerText = (c + w) > 0 ? Math.round((c / (c + w)) * 100) : 0;
+
+      let gc = 0, gw = 0;
+      ['math', 'reasoning', 'english', 'gk', 'ca'].forEach(sec => {
+        userState[sec].forEach((a, i) => {
+          if (a !== null) {
+            if (a === activeQuestions[sec][i].ans) gc++;
+            else gw++;
+          }
+        });
+      });
+      document.getElementById('totalMarks').innerText = Math.max(0, (gc * 2) - (gw * 0.33)).toFixed(2);
+    }
+
+    function toggleScoreboard() {
+      const modal = document.getElementById('scoreboardModal');
+      modal.classList.toggle('hidden');
+      if (!modal.classList.contains('hidden')) {
+        const container = document.getElementById('sectionBreakdownContainer');
+        container.innerHTML = '';
+        let gc = 0, gw = 0, ga = 0;
+        [
+          { k: 'math', n: 'Mathematics (25)' },
+          { k: 'reasoning', n: 'Reasoning (25)' },
+          { k: 'english', n: 'English (25)' },
+          { k: 'gk', n: 'GK / GS (25)' },
+          { k: 'ca', n: 'Current Affairs (25)' }
+        ].forEach(sec => {
+          let c = 0, w = 0;
+          userState[sec.k].forEach((a, i) => {
+            if (a !== null) {
+              ga++;
+              if (a === activeQuestions[sec.k][i].ans) { c++; gc++; }
+              else { w++; gw++; }
+            }
+          });
+          const div = document.createElement('div');
+          div.className = "flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-2";
+          div.innerHTML = `<div><div class="font-bold text-slate-800">${sec.n}</div><div class="text-[10px] text-slate-500">Cor: ${c} | Wrg: ${w}</div></div><div class="font-bold text-indigo-700">${((c*2)-(w*0.33)).toFixed(2)}</div>`;
+          container.appendChild(div);
+        });
+        document.getElementById('modalTotalMarks').innerText = Math.max(0, (gc * 2) - (gw * 0.33)).toFixed(2);
+        document.getElementById('modalAccuracy').innerText = ga > 0 ? Math.round((gc / ga) * 100) : 0;
+      }
+    }
+
+    function resetQuiz() {
+      if (confirm("Reset all answers for this set?")) {
+        loadUserState(true);
+        currentIndex = 0;
+        renderQuestion();
+        toggleScoreboard();
+      }
+    }
+
+    function retakeShuffledExam(fromModal = true) {
+      if (confirm("Reset all answers and shuffle all questions for a fresh retake?")) {
+        const nextCount = getShuffleCount() + 1;
+        try {
+          localStorage.setItem('skpro_shuffle_' + getSetKey(), String(nextCount));
+        } catch (e) {}
+        buildQuestionSet();
+        loadUserState(true);
+        currentIndex = 0;
+        startMockTimer();
+        renderQuestion();
+        if (fromModal) toggleScoreboard();
+      }
+    }
+
+    function copyQuestion() {
+      const q = activeQuestions[currentSection][currentIndex];
+      const txt = `Q: ${q.qEn}\n(BN): ${q.qBn}\nA) ${q.options[0]}\nB) ${q.options[1]}\nC) ${q.options[2]}\nD) ${q.options[3]}\nSolution: ${q.solution}`;
+      navigator.clipboard.writeText(txt).then(() => {
+        const t = document.getElementById('toast');
+        t.style.opacity = '1';
+        setTimeout(() => { t.style.opacity = '0'; }, 1800);
+      });
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebarDrawer').classList.toggle('hidden');
+      document.getElementById('sidebarBackdrop').classList.toggle('hidden');
+    }
+
+    function toggleLoginModal() {
+      document.getElementById('loginModal').classList.toggle('hidden');
+    }
+
+    const appNotifications = [
+      { id: 1, type: "important", title: "🚨 Urgent: Exam Date Announced!", desc: "SSC CGL Tier-1 exam dates released by commission.", full: "The official notification for SSC CGL Tier-1 exam dates has been released. Candidates are advised to check their admit card status and focus on full mock test practice.", bg: "bg-rose-50 border-rose-600", titleColor: "text-rose-900" },
+      { id: 2, type: "important", title: "⭐ New Syllabus Update", desc: "WBP & Railway updated exam pattern guidelines.", full: "Important update regarding WBP & Railway exam syllabus. New reasoning and arithmetic topics have been added to the syllabus guidelines.", bg: "bg-amber-50 border-amber-600", titleColor: "text-amber-900" },
+      { id: 3, type: "general", title: "💡 Daily Practice Tip", desc: "Solve at least 50 questions daily to boost speed.", full: "Consistent daily practice is the key to cracking govt exams. Try our Daily Practice Set mode across Math, Reasoning, English, and GK to build strong accuracy.", bg: "bg-indigo-50 border-indigo-600", titleColor: "text-indigo-900" },
+      { id: 4, type: "general", title: "📚 Study Notes Reminder", desc: "Check 15-day auto-update notes for revision.", full: "Curated short Q&A Study Notes for WBP Police and WB Primary TET have been updated. You can also download them as a PDF directly from the Study Notes section!", bg: "bg-emerald-50 border-emerald-600", titleColor: "text-emerald-900" }
+    ];
+
+    let activeNotifId = null;
+    let currentNotifTab = 'important';
+
+    function getReadNotifs() {
+      try {
+        return JSON.parse(localStorage.getItem('skpro_read_notifs') || '[]');
+      } catch (e) { return []; }
+    }
+
+    function updateNotificationBadge() {
+      const readIds = getReadNotifs();
+      const unreadCount = appNotifications.filter(n => !readIds.includes(n.id)).length;
+      const badge = document.getElementById('notifBadge');
+      if (unreadCount > 0) {
+        badge.innerText = unreadCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function switchNotifTab(tab) {
+      currentNotifTab = tab;
+      activeNotifId = null;
+      ['important', 'general'].forEach(t => {
+        const btn = document.getElementById(`notifTab-${t}`);
+        btn.className = t === tab ? "py-1 rounded-lg bg-white text-indigo-700 shadow-xs cursor-pointer" : "py-1 rounded-lg text-slate-600 cursor-pointer";
+      });
+      renderNotifications();
+    }
+
+    function renderNotifications() {
+      const readIds = getReadNotifs();
+      const list = document.getElementById('notificationList');
+
+      if (activeNotifId !== null) {
+        const n = appNotifications.find(item => item.id === activeNotifId);
+        list.innerHTML = `
+          <div class="flex flex-col gap-2.5">
+            <button type="button" onclick="backToNotifList()" class="text-[11px] font-bold text-indigo-600 hover:underline self-start cursor-pointer">← Back to list</button>
+            <div class="p-3 border-l-4 rounded-xl ${n.bg}">
+              <div class="font-bold text-xs ${n.titleColor}">${n.title}</div>
+              <div class="text-[11px] text-slate-700 mt-1.5 leading-relaxed">${n.full}</div>
+            </div>
+          </div>
+        `;
+        updateNotificationBadge();
+        return;
+      }
+
+      const filtered = appNotifications.filter(n => n.type === currentNotifTab);
+      if (filtered.length === 0) {
+        list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">No notifications here</div>`;
+        updateNotificationBadge();
+        return;
+      }
+
+      list.innerHTML = filtered.map(n => {
+        const isRead = readIds.includes(n.id);
+        return `
+          <div onclick="viewNotification(${n.id})" class="p-2.5 border-l-4 rounded-lg cursor-pointer transition ${isRead ? 'bg-slate-50 border-slate-300 opacity-65' : n.bg}">
+            <div class="flex items-center justify-between gap-1">
+              <div class="font-bold ${isRead ? 'text-slate-600' : n.titleColor}">${n.title}</div>
+              ${isRead ? '<span class="text-[9px] text-slate-400 font-semibold">Read</span>' : '<span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>'}
+            </div>
+            <div class="text-[11px] text-slate-600 mt-0.5">${n.desc}</div>
+          </div>
+        `;
+      }).join('');
+      updateNotificationBadge();
+    }
+
+    function viewNotification(id) {
+      activeNotifId = id;
+      const readIds = getReadNotifs();
+      if (!readIds.includes(id)) {
+        readIds.push(id);
+        localStorage.setItem('skpro_read_notifs', JSON.stringify(readIds));
+      }
+      renderNotifications();
+    }
+
+    function backToNotifList() {
+      activeNotifId = null;
+      renderNotifications();
+    }
+
+    function markAllNotificationsRead() {
+      const allIds = appNotifications.map(n => n.id);
+      localStorage.setItem('skpro_read_notifs', JSON.stringify(allIds));
+      renderNotifications();
+    }
+
+    function toggleNotificationModal() {
+      const modal = document.getElementById('notificationModal');
+      modal.classList.toggle('hidden');
+      if (!modal.classList.contains('hidden')) {
+        activeNotifId = null;
+        currentNotifTab = 'important';
+        ['important', 'general'].forEach(t => {
+          const btn = document.getElementById(`notifTab-${t}`);
+          btn.className = t === 'important' ? "py-1 rounded-lg bg-white text-indigo-700 shadow-xs cursor-pointer" : "py-1 rounded-lg text-slate-600 cursor-pointer";
+        });
+        renderNotifications();
+      }
+    }
+
+    function updateAuthUI() {
+      const savedUser = localStorage.getItem('skpro_user');
+      const nameEl = document.getElementById('sidebarUserName');
+      const statusEl = document.getElementById('sidebarUserStatus');
+      const avatarEl = document.getElementById('userAvatar');
+      const authBtn = document.getElementById('sidebarAuthBtn');
+
+      if (savedUser) {
+        const u = JSON.parse(savedUser);
+        nameEl.innerText = u.name;
+        statusEl.innerText = u.contact;
+        avatarEl.innerText = u.name.charAt(0).toUpperCase();
+        authBtn.innerText = '🚪 Sign Out';
+        authBtn.className = 'w-full py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs cursor-pointer';
+      } else {
+        nameEl.innerText = 'Guest Student';
+        statusEl.innerText = 'Not signed in';
+        avatarEl.innerText = 'G';
+        authBtn.innerText = '🔐 Sign In / Login';
+        authBtn.className = 'w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs cursor-pointer shadow-xs';
+      }
+    }
+
+    function handleAuthClick() {
+      const savedUser = localStorage.getItem('skpro_user');
+      if (savedUser) {
+        localStorage.removeItem('skpro_user');
+        updateAuthUI();
+      } else {
+        toggleSidebar();
+        toggleLoginModal();
+      }
+    }
+
+    function submitLogin(e) {
+      e.preventDefault();
+      const name = document.getElementById('loginNameInput').value.trim();
+      const contact = document.getElementById('loginContactInput').value.trim();
+      if (!name || !contact) return;
+      localStorage.setItem('skpro_user', JSON.stringify({ name, contact }));
+      updateAuthUI();
+      toggleLoginModal();
+      goHome();
+    }
+
+    window.history.replaceState({ view: 'home' }, '', '');
+    window.addEventListener('popstate', function() {
+      if (!isHomeView) {
+        goHome();
+      }
+    });
+
+    updateAuthUI();
+    updateNotificationBadge();
+    goHome();
+  </script>
+</body>
+</html>
